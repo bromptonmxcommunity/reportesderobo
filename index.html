@@ -1,51 +1,302 @@
-<input id="search" placeholder="Buscar número de serie o cuadro">
-<button onclick="buscar()">Buscar</button>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Consulta de bicicletas reportadas</title>
 
-<p id="resultado"></p>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --text: #111;
+      --muted: #666;
+      --card: #fff;
+      --accent: #111;
+      --danger: #b42318;
+      --danger-bg: #fff1f0;
+      --safe: #16703c;
+      --safe-bg: #ecfdf3;
+      --border: #ddd6cc;
+    }
 
-<script>
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS6qcLA7uYvbgd-q8aHvKY5pZ_khaT8mANEE7K6fm3-aGDZOXYRWpjMmI1WVEi0Wo-wyr9XUfXHYDQb/pub?gid=1238164146&single=true&output=csv";
+    * {
+      box-sizing: border-box;
+    }
 
-let bicicletas = [];
+    body {
+      margin: 0;
+      font-family: Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
 
-async function cargarDatos() {
-  const res = await fetch(CSV_URL);
-  const text = await res.text();
+    .container {
+      width: 100%;
+      max-width: 620px;
+    }
 
-  const filas = text.trim().split("\n").map(row => row.split(","));
-  const headers = filas.shift().map(h => h.trim().toLowerCase());
+    .brand {
+      text-align: center;
+      margin-bottom: 28px;
+      letter-spacing: 0.08em;
+      font-size: 13px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
 
-  bicicletas = filas.map(fila => {
-    let obj = {};
-    headers.forEach((h, i) => obj[h] = (fila[i] || "").trim());
-    return obj;
-  });
-}
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 36px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+    }
 
-function normalizar(texto) {
-  return texto.toLowerCase().replace(/\s|-/g, "");
-}
+    h1 {
+      font-size: clamp(32px, 6vw, 54px);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+      margin: 0 0 18px;
+      text-align: center;
+    }
 
-function buscar() {
-  const q = normalizar(document.getElementById("search").value);
-  const resultado = document.getElementById("resultado");
+    .subtitle {
+      text-align: center;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
 
-  const match = bicicletas.find(b =>
-    normalizar(b.serie || "") === q ||
-    normalizar(b.cuadro || "") === q
-  );
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
 
-  if (match) {
-    resultado.innerHTML = `
-      ⚠️ Bicicleta con reporte encontrado<br><br>
-      <strong>Marca:</strong> ${match.marca || "-"}<br>
-      <strong>Lugar:</strong> ${match.lugar || "-"}<br>
-      <strong>Notas:</strong> ${match.notas || "-"}
-    `;
-  } else {
-    resultado.textContent = "No se encontró reporte para ese número.";
-  }
-}
+    input {
+      flex: 1;
+      padding: 16px 18px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 16px;
+      outline: none;
+      background: #fafafa;
+    }
 
-cargarDatos();
-</script>
+    input:focus {
+      border-color: #111;
+      background: #fff;
+    }
+
+    button {
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      padding: 16px 22px;
+      border-radius: 999px;
+      font-size: 15px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      opacity: 0.9;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .result {
+      display: none;
+      border-radius: 20px;
+      padding: 20px;
+      font-size: 15px;
+      line-height: 1.5;
+      border: 1px solid transparent;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .result.danger {
+      background: var(--danger-bg);
+      border-color: #f3b3ad;
+      color: var(--danger);
+    }
+
+    .result.safe {
+      background: var(--safe-bg);
+      border-color: #abefc6;
+      color: var(--safe);
+    }
+
+    .result-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .result strong {
+      color: inherit;
+    }
+
+    .disclaimer {
+      margin-top: 22px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 540px) {
+      .card {
+        padding: 28px 22px;
+        border-radius: 24px;
+      }
+
+      .search-box {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <div class="brand">DFCC · Consulta comunitaria</div>
+
+    <section class="card">
+      <h1>Revisa antes de comprar.</h1>
+
+      <p class="subtitle">
+        Busca por número de serie o número de cuadro para consultar si una bicicleta cuenta con reporte.
+      </p>
+
+      <div class="search-box">
+        <input id="search" placeholder="Serie o número de cuadro" oninput="buscar()" />
+        <button onclick="buscar()">Buscar</button>
+      </div>
+
+      <div class="hint">
+        Escribe el número sin importar espacios, guiones o mayúsculas.
+      </div>
+
+      <div id="resultado" class="result"></div>
+
+      <p class="disclaimer">
+        Esta información es referencial y comunitaria. Recomendamos verificar cualquier coincidencia con autoridades o con el propietario original.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS6qcLA7uYvbgd-q8aHvKY5pZ_khaT8mANEE7K6fm3-aGDZOXYRWpjMmI1WVEi0Wo-wyr9XUfXHYDQb/pubhtml?gid=1238164146&single=true";
+
+    let bicicletas = [];
+
+    async function cargarDatos() {
+      try {
+        const res = await fetch(CSV_URL);
+
+        if (!res.ok) {
+          throw new Error("No se pudo cargar el CSV");
+        }
+
+        const text = await res.text();
+
+        const filas = text
+          .trim()
+          .split(/\r?\n/)
+          .map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
+
+        const headers = filas.shift().map(h =>
+          h.replace(/"/g, "").trim().toLowerCase()
+        );
+
+        bicicletas = filas.map(fila => {
+          let obj = {};
+          headers.forEach((h, i) => {
+            obj[h] = (fila[i] || "").replace(/"/g, "").trim();
+          });
+          return obj;
+        });
+
+        console.log("Datos cargados:", bicicletas);
+
+      } catch (error) {
+        console.error(error);
+        mostrarErrorCarga();
+      }
+    }
+
+    function normalizar(texto) {
+      return texto
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]/g, "");
+    }
+
+    function buscar() {
+      const q = normalizar(document.getElementById("search").value);
+      const resultado = document.getElementById("resultado");
+
+      if (!q) {
+        resultado.className = "result";
+        resultado.innerHTML = "";
+        return;
+      }
+
+      const match = bicicletas.find(b =>
+        normalizar(b.serie || "").includes(q) ||
+        normalizar(b.cuadro || "").includes(q)
+      );
+
+      if (match) {
+        resultado.className = "result show danger";
+        resultado.innerHTML = `
+          <div class="result-title">⚠️ Posible reporte encontrado</div>
+          <strong>Serie:</strong> ${match.serie || "-"}<br>
+          <strong>Cuadro:</strong> ${match.cuadro || "-"}<br>
+          <strong>Marca:</strong> ${match.marca || "-"}<br>
+          <strong>Lugar:</strong> ${match.lugar || "-"}<br>
+          <strong>Notas:</strong> ${match.notas || "-"}
+        `;
+      } else {
+        resultado.className = "result show safe";
+        resultado.innerHTML = `
+          <div class="result-title">Sin reporte encontrado</div>
+          No encontramos coincidencias para ese número.
+        `;
+      }
+    }
+
+    function mostrarErrorCarga() {
+      const resultado = document.getElementById("resultado");
+      resultado.className = "result show danger";
+      resultado.innerHTML = `
+        <div class="result-title">Error cargando la base</div>
+        Revisa que el enlace CSV esté publicado correctamente.
+      `;
+    }
+
+    cargarDatos();
+  </script>
+</body>
+</html>

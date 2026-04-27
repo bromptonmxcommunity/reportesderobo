@@ -263,10 +263,9 @@
         return;
       }
 
-      const match = bicicletas.find(b =>
-        normalizar(b.serie || "").includes(q) ||
-        normalizar(b.cuadro || "").includes(q)
-      );
+const match =
+  bicicletas.find(b => normalizar(b.serie || "").includes(q)) ||
+  bicicletas.find(b => normalizar(b.cuadro || "").includes(q));
 
       if (match) {
         resultado.className = "result show danger";

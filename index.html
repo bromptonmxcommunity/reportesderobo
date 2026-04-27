@@ -301,39 +301,16 @@
   }
 }
 
-const match =
-  bicicletas.find(b => normalizar(b.serie || "").includes(q)) ||
-  bicicletas.find(b => normalizar(b.cuadro || "").includes(q));
+function mostrarErrorCarga() {
+  const resultado = document.getElementById("resultado");
+  resultado.className = "result show danger";
+  resultado.innerHTML = `
+    <div class="result-title">Error cargando la base</div>
+    Revisa que el enlace CSV esté publicado correctamente.
+  `;
+}
 
-      if (match) {
-        resultado.className = "result show danger";
-        resultado.innerHTML = `
-          <div class="result-title">⚠️ Posible reporte encontrado</div>
-          <strong>Serie:</strong> ${match.serie || "-"}<br>
-          <strong>Cuadro:</strong> ${match.cuadro || "-"}<br>
-          <strong>Modelo:</strong> ${match.modelo || "-"}<br>
-          <strong>Lugar:</strong> ${match.lugar || "-"}<br>
-          <strong>Notas:</strong> ${match.notas || "-"}
-        `;
-      } else {
-        resultado.className = "result show safe";
-        resultado.innerHTML = `
-          <div class="result-title">Sin reporte encontrado</div>
-          No encontramos coincidencias para ese número.
-        `;
-      }
-    }
-
-    function mostrarErrorCarga() {
-      const resultado = document.getElementById("resultado");
-      resultado.className = "result show danger";
-      resultado.innerHTML = `
-        <div class="result-title">Error cargando la base</div>
-        Revisa que el enlace CSV esté publicado correctamente.
-      `;
-    }
-
-    cargarDatos();
+cargarDatos();
   </script>
 </body>
 </html>

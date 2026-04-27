@@ -1,5 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
+
+  <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-NW2ZLGRR');</script>
+<!-- End Google Tag Manager -->
+  
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -24,24 +33,22 @@
     }
 
 body {
-  margin: 0;
-  font-family: Helvetica, Arial, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-
-  display: flex;
-  flex-direction: column;   /* 👈 clave */
-  align-items: center;
-  justify-content: center;
-}
+      margin: 0;
+      font-family: Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
 
     .container {
-  flex: 1; /* empuja el contador hacia abajo */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
+      width: 100%;
+      max-width: 620px;
+    }
+    
     .brand {
       text-align: center;
       margin-bottom: 28px;
@@ -178,12 +185,6 @@ body {
       }
     }
 
-    .counter {
-  margin-top: 24px;
-  text-align: center;
-  font-size: 12px;
-  color: #999;
-}
 
     
     
@@ -191,6 +192,12 @@ body {
 </head>
 
 <body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NW2ZLGRR"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+  
   <main class="container">
     <div class="brand">Brompton MX Community · Reportes proporcionados por los usuarios.</div>
 
@@ -218,11 +225,6 @@ body {
     </section>
 </section>
 
-<div class="counter">
-  <a href='https://www.free-counters.org/'>free-Counters.org</a>
-  <script type='text/javascript' src='https://www.freevisitorcounters.com/auth.php?id=d327127d25abb943ab4221c8683cf75450ee7bd7'></script>
-  <script type="text/javascript" src="https://www.freevisitorcounters.com/en/home/counter/1541616/t/5"></script>
-</div>
 
 </main>
     

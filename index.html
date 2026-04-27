@@ -1,0 +1,51 @@
+<input id="search" placeholder="Buscar número de serie o cuadro">
+<button onclick="buscar()">Buscar</button>
+
+<p id="resultado"></p>
+
+<script>
+const CSV_URL = "PEGA_AQUI_TU_URL_CSV_PUBLICADA";
+
+let bicicletas = [];
+
+async function cargarDatos() {
+  const res = await fetch(CSV_URL);
+  const text = await res.text();
+
+  const filas = text.trim().split("\n").map(row => row.split(","));
+  const headers = filas.shift().map(h => h.trim().toLowerCase());
+
+  bicicletas = filas.map(fila => {
+    let obj = {};
+    headers.forEach((h, i) => obj[h] = (fila[i] || "").trim());
+    return obj;
+  });
+}
+
+function normalizar(texto) {
+  return texto.toLowerCase().replace(/\s|-/g, "");
+}
+
+function buscar() {
+  const q = normalizar(document.getElementById("search").value);
+  const resultado = document.getElementById("resultado");
+
+  const match = bicicletas.find(b =>
+    normalizar(b.serie || "") === q ||
+    normalizar(b.cuadro || "") === q
+  );
+
+  if (match) {
+    resultado.innerHTML = `
+      ⚠️ Bicicleta con reporte encontrado<br><br>
+      <strong>Marca:</strong> ${match.marca || "-"}<br>
+      <strong>Lugar:</strong> ${match.lugar || "-"}<br>
+      <strong>Notas:</strong> ${match.notas || "-"}
+    `;
+  } else {
+    resultado.textContent = "No se encontró reporte para ese número.";
+  }
+}
+
+cargarDatos();
+</script>

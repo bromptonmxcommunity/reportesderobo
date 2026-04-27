@@ -190,7 +190,7 @@
       </p>
 
       <div class="search-box">
-        <input id="search" placeholder="Serie o número de cuadro" oninput="buscar()" />
+        <input id="search" placeholder="Serie o número de cuadro" />
         <button onclick="buscar()">Buscar</button>
       </div>
 
@@ -254,14 +254,52 @@
     }
 
     function buscar() {
-      const q = normalizar(document.getElementById("search").value);
-      const resultado = document.getElementById("resultado");
+  const inputOriginal = document.getElementById("search").value.trim();
+  const q = normalizar(inputOriginal);
+  const resultado = document.getElementById("resultado");
 
-      if (!q) {
-        resultado.className = "result";
-        resultado.innerHTML = "";
-        return;
-      }
+  if (!q) {
+    resultado.className = "result show danger";
+    resultado.innerHTML = `
+      <div class="result-title">Ingresa un dato para buscar</div>
+      Escribe un número de serie o número de cuadro.
+    `;
+    return;
+  }
+
+  const matchPorSerie = bicicletas.find(b =>
+    normalizar(b.serie || "").includes(q)
+  );
+
+  const matchPorCuadro = !matchPorSerie
+    ? bicicletas.find(b => normalizar(b.cuadro || "").includes(q))
+    : null;
+
+  const match = matchPorSerie || matchPorCuadro;
+
+  if (match) {
+    const tipoCoincidencia = matchPorSerie ? "Número de serie" : "Número de cuadro";
+    const valorCoincidencia = matchPorSerie ? match.serie : match.cuadro;
+
+    resultado.className = "result show danger";
+    resultado.innerHTML = `
+      <div class="result-title">⚠️ Posible reporte encontrado</div>
+      <strong>Coincidencia por:</strong> ${tipoCoincidencia}<br>
+      <strong>Valor encontrado:</strong> ${valorCoincidencia || "-"}<br><br>
+      <strong>Serie:</strong> ${match.serie || "-"}<br>
+      <strong>Cuadro:</strong> ${match.cuadro || "-"}<br>
+      <strong>Modelo:</strong> ${match.modelo || "-"}<br>
+      <strong>Lugar:</strong> ${match.lugar || "-"}<br>
+      <strong>Notas:</strong> ${match.notas || "-"}
+    `;
+  } else {
+    resultado.className = "result show safe";
+    resultado.innerHTML = `
+      <div class="result-title">Sin reporte encontrado</div>
+      No encontramos coincidencias para: <strong>${inputOriginal}</strong>
+    `;
+  }
+}
 
 const match =
   bicicletas.find(b => normalizar(b.serie || "").includes(q)) ||

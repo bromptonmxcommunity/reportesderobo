@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Qué hacer si te roban tu bicicleta</title>
+  <style>
+    :root {
+      --bg: #f5f1e8;
+      --ink: #171717;
+      --muted: #5d5a53;
+      --accent: #f05a28;
+      --card: #fffaf0;
+      --line: #ded6c6;
+      --green: #2f6b4f;
+      --red: #b5322c;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.35;
+    }
+
+    .poster {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 36px 20px 48px;
+    }
+
+    .hero {
+      background: var(--ink);
+      color: white;
+      border-radius: 28px;
+      padding: 38px 34px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -70px;
+      top: -80px;
+      width: 260px;
+      height: 260px;
+      border: 34px solid var(--accent);
+      border-radius: 50%;
+      opacity: 0.85;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(42px, 8vw, 82px);
+      line-height: .92;
+      max-width: 760px;
+      letter-spacing: -0.06em;
+    }
+
+    .subhead {
+      font-size: clamp(18px, 2.6vw, 26px);
+      max-width: 680px;
+      color: #f4e8d4;
+      margin: 22px 0 0;
+      font-weight: 600;
+    }
+
+    .warning {
+      margin-top: 22px;
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      background: #fff;
+      color: var(--ink);
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-weight: 800;
+      position: relative;
+      z-index: 1;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 2px solid var(--line);
+      border-radius: 24px;
+      padding: 24px;
+      min-height: 205px;
+      box-shadow: 0 10px 0 rgba(0,0,0,.06);
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .number {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font-weight: 900;
+      font-size: 22px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .highlight {
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .do,
+    .dont {
+      border-radius: 22px;
+      padding: 24px;
+      color: white;
+    }
+
+    .do { background: var(--green); }
+    .dont { background: var(--red); }
+
+    .do h3,
+    .dont h3 {
+      margin: 0 0 12px;
+      font-size: 26px;
+      letter-spacing: -0.04em;
+    }
+
+    .do ul,
+    .dont ul {
+      margin: 0;
+      padding-left: 20px;
+      font-size: 17px;
+    }
+
+    .do li,
+    .dont li {
+      margin: 8px 0;
+    }
+
+    .footer {
+      margin-top: 24px;
+      background: white;
+      border-radius: 26px;
+      padding: 26px;
+      border: 2px solid var(--ink);
+      display: grid;
+      grid-template-columns: 1.4fr .8fr;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .footer h2 {
+      font-size: clamp(30px, 5vw, 54px);
+      margin-bottom: 8px;
+    }
+
+    .qr-box {
+      border: 3px dashed var(--line);
+      border-radius: 20px;
+      min-height: 170px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+      padding: 20px;
+      font-weight: 700;
+    }
+
+    .microcopy {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .tagline {
+      margin-top: 18px;
+      display: inline-block;
+      font-weight: 900;
+      color: var(--accent);
+      font-size: 22px;
+    }
+
+    @media (max-width: 760px) {
+      .grid,
+      .full,
+      .footer {
+        grid-template-columns: 1fr;
+      }
+
+      .hero { padding: 30px 24px; }
+      .card { min-height: auto; }
+    }
+
+    @media print {
+      body { background: white; }
+      .poster { max-width: none; padding: 12mm; }
+      .card { break-inside: avoid; box-shadow: none; }
+      .hero { break-inside: avoid; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="poster">
+    <section class="hero">
+      <span class="eyebrow">Robo de bicicleta</span>
+      <h1>Actúa rápido. Denuncia. Comparte.</h1>
+      <p class="subhead">
+        Si te roban tu bici, cada dato cuenta: número de serie, fotos, factura y lugar exacto pueden ayudar a recuperarla.
+      </p>
+      <div class="warning">⚠️ No confrontes a nadie: tu seguridad va primero.</div>
+    </section>
+
+    <section class="grid" aria-label="Pasos a seguir">
+      <article class="card">
+        <div class="step">
+          <span class="number">1</span>
+          <h2>Ponte a salvo</h2>
+        </div>
+        <p>
+          Si hubo violencia, amenaza o riesgo inmediato, llama al <span class="highlight">911</span>
+          o acude al Ministerio Público. No intentes recuperar la bici por tu cuenta.
+        </p>
+      </article>
+
+      <article class="card">
+        <div class="step">
+          <span class="number">2</span>
+          <h2>Reúne pruebas</h2>
+        </div>
+        <p>
+          Ten a la mano <span class="highlight">factura, número de serie, fotos, marca, modelo, color,
+          componentes</span> y la narración clara de los hechos.
+        </p>
+      </article>
+
+      <article class="card">
+        <div class="step">
+          <span class="number">3</span>
+          <h2>Levanta denuncia</h2>
+        </div>
+        <p>
+          En CDMX puedes iniciar una denuncia digital para ciertos delitos sin violencia.
+          Si hubo violencia, ve directamente al <span class="highlight">MP</span>.
+        </p>
+      </article>
+
+      <article class="card">
+        <div class="step">
+          <span class="number">4</span>
+          <h2>Pide tu carpeta</h2>
+        </div>
+        <p>
+          Solicita y guarda el número de <span class="highlight">carpeta de investigación</span>.
+          Ese folio acredita formalmente el reporte del robo.
+        </p>
+      </article>
+
+      <article class="card">
+        <div class="step">
+          <span class="number">5</span>
+          <h2>Activa la red</h2>
+        </div>
+        <p>
+          Publica el reporte con datos verificables en comunidades ciclistas, tiendas y talleres.
+          Evita acusar sin pruebas.
+        </p>
+      </article>
+
+      <article class="card">
+        <div class="step">
+          <span class="number">6</span>
+          <h2>Si aparece en venta</h2>
+        </div>
+        <p>
+          Toma capturas, guarda links, perfiles, ubicación y hora.
+          <span class="highlight">No quedes de verte solo</span>; entrega la información a la autoridad.
+        </p>
+      </article>
+
+      <section class="full">
+        <div class="do">
+          <h3>Haz esto</h3>
+          <ul>
+            <li>Denuncia lo antes posible.</li>
+            <li>Reporta el número de serie.</li>
+            <li>Guarda evidencia y capturas.</li>
+            <li>Comparte en redes y comunidades.</li>
+          </ul>
+        </div>
+
+        <div class="dont">
+          <h3>No hagas esto</h3>
+          <ul>
+            <li>No compres bicis sin comprobar origen.</li>
+            <li>No confrontes al vendedor.</li>
+            <li>No publiques datos personales sin prueba.</li>
+            <li>No dejes pasar “precios demasiado buenos”.</li>
+          </ul>
+        </div>
+      </section>
+    </section>
+
+    <section class="footer">
+      <div>
+        <h2>No compres robado.</h2>
+        <p>
+          Antes de comprar una bici usada: pide factura, número de serie, identificación del vendedor
+          y revisa si existe reporte de robo.
+        </p>
+        <span class="tagline">Si el precio no cuadra, sospecha.</span>
+        <p class="microcopy">
+          Material informativo. No sustituye asesoría legal. Los pasos pueden variar según el estado de la República.
+        </p>
+      </div>
+
+      <div class="qr-box">
+        Espacio para QR<br />
+        a denuncia digital, guía o registro de bicis
+      </div>
+    </section>
+  </main>
+</body>
+</html>

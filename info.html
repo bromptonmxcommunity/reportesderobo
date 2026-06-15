@@ -453,10 +453,98 @@
 </footer>
 
 <script>
-    const q = document
-  .getElementById("search")
-  .value
-  .replace(/[^0-9]/g, "");
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS6qcLA7uYvbgd-q8aHvKY5pZ_khaT8mANEE7K6fm3-aGDZOXYRWpjMmI1WVEi0Wo-wyr9XUfXHYDQb/pub?gid=1238164146&single=true&output=csv";
+
+let bicicletas = [];
+
+async function cargarDatos() {
+  try {
+    const res = await fetch(CSV_URL);
+    if (!res.ok) throw new Error("No se pudo cargar el CSV");
+
+    const text = await res.text();
+
+    const filas = text
+      .trim()
+      .split(/\r?\n/)
+      .map(row => row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
+
+    const headers = filas.shift().map(h =>
+      h.replace(/"/g, "").trim().toLowerCase()
+    );
+
+    bicicletas = filas.map(fila => {
+      let obj = {};
+      headers.forEach((h, i) => {
+        obj[h] = (fila[i] || "").replace(/"/g, "").trim();
+      });
+      return obj;
+    });
+
+  } catch (error) {
+    mostrarResultado("Error cargando la base. Revisa que el CSV esté publicado.", true);
+  }
+}
+
+function soloNumeros(texto) {
+  return String(texto || "").replace(/[^0-9]/g, "");
+}
+
+function buscar() {
+  const input = document.getElementById("search");
+  const resultado = document.getElementById("resultado");
+
+  const q = soloNumeros(input.value);
+  input.value = q;
+
+  if (!q) {
+    mostrarResultado("Ingresa un número de serie o cuadro.", true);
+    return;
+  }
+
+  const matchPorSerie = bicicletas.find(b =>
+    soloNumeros(b.serie).includes(q)
+  );
+
+  const matchPorCuadro = !matchPorSerie
+    ? bicicletas.find(b => soloNumeros(b.cuadro).includes(q))
+    : null;
+
+  const match = matchPorSerie || matchPorCuadro;
+
+  if (match) {
+    const tipo = matchPorSerie ? "Número de serie" : "Número de cuadro";
+    const valor = matchPorSerie ? match.serie : match.cuadro;
+
+    resultado.innerHTML = `
+      <strong style="color:#b5322c;">⚠️ Posible reporte encontrado</strong><br><br>
+      <strong>Coincidencia por:</strong> ${tipo}<br>
+      <strong>Valor encontrado:</strong> ${valor || "-"}<br><br>
+      <strong>Serie:</strong> ${match.serie || "-"}<br>
+      <strong>Cuadro:</strong> ${match.cuadro || "-"}<br>
+      <strong>Modelo:</strong> ${match.modelo || "-"}<br>
+      <strong>Lugar:</strong> ${match.lugar || "-"}<br>
+      <strong>Notas:</strong> ${match.notas || "-"}<br>
+      <strong>Fecha:</strong> ${match.fecha || "-"}
+    `;
+  } else {
+    resultado.innerHTML = `
+      <strong style="color:#2f6b4f;">Sin reporte encontrado</strong><br><br>
+      No encontramos coincidencias para: <strong>${q}</strong>
+    `;
+  }
+}
+
+function mostrarResultado(mensaje, error = false) {
+  const resultado = document.getElementById("resultado");
+  resultado.innerHTML = `
+    <strong style="color:${error ? "#b5322c" : "#2f6b4f"};">
+      ${mensaje}
+    </strong>
+  `;
+}
+
+cargarDatos();
 </script>
     </body>
 </html>

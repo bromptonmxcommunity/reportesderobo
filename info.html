@@ -383,16 +383,77 @@
         </p>
       </div>
 
-      <div class="qr-box"> 
-        ℹ️<a href="/reportesderobo/index.html">Consulta si existe reporte</a><br /><br />
-        ✉️<a href="mailto:reportebrompton@gmail.com?subject=Reporte%20de%20robo%20de%20bicicleta&body=Por%20favor%20comp%C3%A1rtenos%20los%20siguientes%20datos%0A%0ANombre%20completo:%0ACorreo%20electr%C3%B3nico:%0ATel%C3%A9fono%20de%20contacto:%0AMarca:%0AN%C3%BAmero%20de%20serie:%0AN%C3%BAmero%20de%20cuadro:%0ALugar%20de%20robo:%0AModelo%20de%20tu%20bici:%0AColor%20de%20tu%20bici:%0ACaracter%C3%ADsticas:%0ANotas%20adicionales:%20%C2%BF%C3%93mo%20sucedieron%20las%20cosas?%20%C2%BFLevantaste%20denuncia?%20M%C3%A1s%20detalles%20que%20nos%20quieres%20compartir.">
-  Reportar robo
-</a>
-      </div>
+<div class="qr-box">
+
+  <div style="width:100%;">
+
+    <div style="margin-bottom:16px;">
+      ℹ️ <a href="/reportesderobo/index.html">Consulta si existe reporte</a>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      ✉️ <a href="mailto:reportebrompton@gmail.com?subject=Reporte%20de%20robo%20de%20bicicleta&body=Por%20favor%20comp%C3%A1rtenos%20los%20siguientes%20datos...">
+        Reportar robo
+      </a>
+    </div>
+
+    <hr style="margin:16px 0; border:none; border-top:1px solid #ded6c6;">
+
+    <strong>Buscar reporte</strong>
+
+    <input
+      id="search"
+      type="text"
+      inputmode="numeric"
+      placeholder="Serie o cuadro"
+      maxlength="20"
+      style="
+        width:100%;
+        margin-top:10px;
+        padding:10px;
+        border:1px solid #ded6c6;
+        border-radius:12px;
+        text-align:center;
+      "
+      oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+    >
+
+    <button
+      onclick="buscar()"
+      style="
+        width:100%;
+        margin-top:8px;
+        padding:10px;
+        border:none;
+        border-radius:12px;
+        background:#171717;
+        color:white;
+        cursor:pointer;
+      "
+    >
+      Buscar
+    </button>
+
+    <div
+      id="resultado"
+      style="
+        margin-top:12px;
+        font-size:13px;
+        text-align:left;
+      "
+    ></div>
+
+  </div>
+
+</div>
     </section>
   </main>
   <footer style="text-align:center; margin-top:20px; font-weight:700; color:#5d5a53;">
   Brompton MX Community
 </footer>
 </body>
+    const q = document
+  .getElementById("search")
+  .value
+  .replace(/[^0-9]/g, "");
 </html>

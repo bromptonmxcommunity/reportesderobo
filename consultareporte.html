@@ -1,52 +1,455 @@
-<input id="search" placeholder="Buscar número de serie o cuadro">
-<button onclick="buscar()">Buscar</button>
+<style>
+.brompton-search {
+  max-width: 520px;
+  margin: 0 auto;
+}
 
-<p id="resultado"></p>
+.brompton-search input[type="text"] {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  font-size: 16px;
+}
+
+.search-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.search-buttons button {
+  min-height: 48px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+#estadoOCR {
+  min-height: 24px;
+  margin-top: 14px;
+  font-size: 14px;
+}
+
+.resultado {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 8px;
+}
+
+.resultado p {
+  margin: 7px 0;
+}
+
+.resultado--alerta {
+  border: 2px solid currentColor;
+}
+
+.resultado--sin-reporte {
+  border: 1px solid currentColor;
+}
+</style>
+
+<div class="brompton-search">
+  <input
+    id="search"
+    type="text"
+    inputmode="numeric"
+    autocomplete="off"
+    placeholder="Número de serie o cuadro"
+  >
+
+  <div class="search-buttons">
+    <button type="button" onclick="buscar()">
+      Buscar
+    </button>
+
+    <button type="button" onclick="abrirCamara()">
+      📷 Escanear
+    </button>
+  </div>
+
+  <!-- Abre la cámara trasera en móviles -->
+  <input
+    id="cameraInput"
+    type="file"
+    accept="image/*"
+    capture="environment"
+    hidden
+  >
+
+  <p id="estadoOCR" aria-live="polite"></p>
+  <div id="resultado" aria-live="polite"></div>
+</div>
+
+<!-- Motor OCR -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <script>
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS6qcLA7uYvbgd-q8aHvKY5pZ_khaT8mANEE7K6fm3-aGDZOXYRWpjMmI1WVEi0Wo-wyr9XUfXHYDQb/pubhtml?gid=1238164146&single=true";
+const CSV_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vS6qcLA7uYvbgd-q8aHvKY5pZ_khaT8mANEE7K6fm3-aGDZOXYRWpjMmI1WVEi0Wo-wyr9XUfXHYDQb/pub?gid=1238164146&single=true&output=csv";
 
 let bicicletas = [];
 
+/**
+ * Carga la base de bicicletas reportadas.
+ */
 async function cargarDatos() {
-  const res = await fetch(CSV_URL);
-  const text = await res.text();
+  const resultado = document.getElementById("resultado");
 
-  const filas = text.trim().split("\n").map(row => row.split(","));
-  const headers = filas.shift().map(h => h.trim().toLowerCase());
+  try {
+    const res = await fetch(CSV_URL);
 
-  bicicletas = filas.map(fila => {
-    let obj = {};
-    headers.forEach((h, i) => obj[h] = (fila[i] || "").trim());
-    return obj;
+    if (!res.ok) {
+      throw new Error(`Error HTTP: ${res.status}`);
+    }
+
+    const text = await res.text();
+    bicicletas = parsearCSV(text);
+
+    console.log(`${bicicletas.length} reportes cargados`);
+  } catch (error) {
+    console.error(error);
+    resultado.textContent =
+      "No fue posible cargar la base de reportes.";
+  }
+}
+
+/**
+ * Parser CSV sencillo que respeta campos entre comillas.
+ */
+function parsearCSV(texto) {
+  const filas = [];
+  let fila = [];
+  let campo = "";
+  let dentroDeComillas = false;
+
+  for (let i = 0; i < texto.length; i++) {
+    const caracter = texto[i];
+    const siguiente = texto[i + 1];
+
+    if (caracter === '"' && dentroDeComillas && siguiente === '"') {
+      campo += '"';
+      i++;
+    } else if (caracter === '"') {
+      dentroDeComillas = !dentroDeComillas;
+    } else if (caracter === "," && !dentroDeComillas) {
+      fila.push(campo);
+      campo = "";
+    } else if (
+      (caracter === "\n" || caracter === "\r") &&
+      !dentroDeComillas
+    ) {
+      if (caracter === "\r" && siguiente === "\n") {
+        i++;
+      }
+
+      fila.push(campo);
+
+      if (fila.some(valor => valor.trim() !== "")) {
+        filas.push(fila);
+      }
+
+      fila = [];
+      campo = "";
+    } else {
+      campo += caracter;
+    }
+  }
+
+  if (campo || fila.length) {
+    fila.push(campo);
+    filas.push(fila);
+  }
+
+  if (!filas.length) return [];
+
+  const headers = filas
+    .shift()
+    .map(header => header.trim().toLowerCase());
+
+  return filas.map(valores => {
+    const bicicleta = {};
+
+    headers.forEach((header, index) => {
+      bicicleta[header] = (valores[index] || "").trim();
+    });
+
+    return bicicleta;
   });
 }
 
-function normalizar(texto) {
-  return texto.toLowerCase().replace(/\s|-/g, "");
+/**
+ * Deja solamente letras y números.
+ */
+function normalizar(texto = "") {
+  return String(texto)
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
 }
 
+/**
+ * Busca todas las coincidencias por serie o cuadro.
+ */
 function buscar() {
-  const q = normalizar(document.getElementById("search").value);
+  const input = document.getElementById("search");
   const resultado = document.getElementById("resultado");
+  const q = normalizar(input.value);
 
-  const match = bicicletas.find(b =>
-    normalizar(b.serie || "") === q ||
-    normalizar(b.cuadro || "") === q
+  resultado.innerHTML = "";
+
+  if (q.length < 6) {
+    resultado.textContent =
+      "Introduce al menos 6 caracteres del número.";
+    return;
+  }
+
+  const coincidencias = bicicletas.filter(bicicleta =>
+    normalizar(bicicleta.serie) === q ||
+    normalizar(bicicleta.cuadro) === q
   );
 
-  if (match) {
+  if (!coincidencias.length) {
     resultado.innerHTML = `
-      ⚠️ Bicicleta con reporte encontrado<br>
-      <strong>Marca:</strong> ${match.marca || "-"}<br>
-      <strong>Modelo:</strong> ${match.modelo || "-"}<br>
-      <strong>Status:</strong> ${match.status || "-"}<br>
-      <strong>Notas:</strong> ${match.notas || "-"}
+      <div class="resultado resultado--sin-reporte">
+        <strong>No se encontró un reporte.</strong>
+        <p>
+          Esto no garantiza que la bicicleta no tenga algún
+          reporte fuera de esta base.
+        </p>
+      </div>
     `;
-  } else {
-    resultado.textContent = "No se encontró reporte para ese número.";
+    return;
   }
+
+  resultado.innerHTML = coincidencias
+    .map(bicicleta => {
+      const serieCoincide =
+        normalizar(bicicleta.serie) === q;
+
+      const cuadroCoincide =
+        normalizar(bicicleta.cuadro) === q;
+
+      let coincidencia = "";
+
+      if (serieCoincide && cuadroCoincide) {
+        coincidencia = "Serie y cuadro";
+      } else if (serieCoincide) {
+        coincidencia = "Número de serie";
+      } else {
+        coincidencia = "Número de cuadro";
+      }
+
+      return `
+        <div class="resultado resultado--alerta">
+          <h3>⚠️ Bicicleta con reporte</h3>
+
+          <p>
+            <strong>Coincidencia por:</strong>
+            ${escaparHTML(coincidencia)}
+          </p>
+
+          <p>
+            <strong>Valor encontrado:</strong>
+            ${escaparHTML(q)}
+          </p>
+
+          <p>
+            <strong>Marca:</strong>
+            ${escaparHTML(bicicleta.marca || "-")}
+          </p>
+
+          <p>
+            <strong>Modelo:</strong>
+            ${escaparHTML(bicicleta.modelo || "-")}
+          </p>
+
+          <p>
+            <strong>Status:</strong>
+            ${escaparHTML(bicicleta.status || "-")}
+          </p>
+
+          <p>
+            <strong>Lugar:</strong>
+            ${escaparHTML(bicicleta.lugar || "-")}
+          </p>
+
+          <p>
+            <strong>Notas:</strong>
+            ${escaparHTML(bicicleta.notas || "-")}
+          </p>
+        </div>
+      `;
+    })
+    .join("");
 }
+
+/**
+ * Abre el selector de cámara o fotografías.
+ */
+function abrirCamara() {
+  document.getElementById("cameraInput").click();
+}
+
+/**
+ * Procesa la fotografía tomada.
+ */
+document
+  .getElementById("cameraInput")
+  .addEventListener("change", async event => {
+    const archivo = event.target.files?.[0];
+
+    if (!archivo) return;
+
+    const estado = document.getElementById("estadoOCR");
+    const input = document.getElementById("search");
+
+    estado.textContent = "Analizando fotografía…";
+
+    try {
+      const imagenProcesada =
+        await prepararImagenParaOCR(archivo);
+
+      const resultadoOCR = await Tesseract.recognize(
+        imagenProcesada,
+        "eng",
+        {
+          logger: progreso => {
+            if (
+              progreso.status === "recognizing text" &&
+              typeof progreso.progress === "number"
+            ) {
+              const porcentaje =
+                Math.round(progreso.progress * 100);
+
+              estado.textContent =
+                `Leyendo número… ${porcentaje}%`;
+            }
+          }
+        }
+      );
+
+      const candidatos =
+        extraerCandidatos(resultadoOCR.data.text);
+
+      if (!candidatos.length) {
+        estado.textContent =
+          "No pude identificar el número. Intenta tomar la foto más cerca y con mejor iluminación.";
+        return;
+      }
+
+      input.value = candidatos[0];
+      estado.textContent =
+        `Número detectado: ${candidatos[0]}`;
+
+      buscar();
+    } catch (error) {
+      console.error(error);
+
+      estado.textContent =
+        "No fue posible analizar la imagen. Puedes introducir el número manualmente.";
+    } finally {
+      event.target.value = "";
+    }
+  });
+
+/**
+ * Mejora contraste y tamaño antes de ejecutar OCR.
+ */
+async function prepararImagenParaOCR(archivo) {
+  const bitmap = await createImageBitmap(archivo);
+
+  const maxWidth = 1800;
+  const escala = Math.min(1, maxWidth / bitmap.width);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * escala);
+  canvas.height = Math.round(bitmap.height * escala);
+
+  const ctx = canvas.getContext("2d", {
+    willReadFrequently: true
+  });
+
+  ctx.drawImage(
+    bitmap,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  const imageData = ctx.getImageData(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  const datos = imageData.data;
+
+  for (let i = 0; i < datos.length; i += 4) {
+    const gris =
+      datos[i] * 0.299 +
+      datos[i + 1] * 0.587 +
+      datos[i + 2] * 0.114;
+
+    /*
+     * Contraste alto para números grabados.
+     * Puedes ajustar 135 según las fotografías.
+     */
+    const valor = gris > 135 ? 255 : 0;
+
+    datos[i] = valor;
+    datos[i + 1] = valor;
+    datos[i + 2] = valor;
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+
+  return canvas;
+}
+
+/**
+ * Extrae posibles números de serie o cuadro del texto OCR.
+ */
+function extraerCandidatos(texto) {
+  const lineas = String(texto)
+    .toUpperCase()
+    .split(/\n+/)
+    .map(normalizar)
+    .filter(valor =>
+      valor.length >= 6 &&
+      valor.length <= 20 &&
+      /\d/.test(valor)
+    );
+
+  /*
+   * Prioriza cadenas que contengan principalmente números.
+   */
+  return [...new Set(lineas)].sort((a, b) => {
+    const digitosA = (a.match(/\d/g) || []).length;
+    const digitosB = (b.match(/\d/g) || []).length;
+
+    return digitosB - digitosA;
+  });
+}
+
+function escaparHTML(valor = "") {
+  return String(valor)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+document
+  .getElementById("search")
+  .addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      buscar();
+    }
+  });
 
 cargarDatos();
 </script>
